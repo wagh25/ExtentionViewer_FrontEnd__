@@ -5,7 +5,6 @@ import SpeechRecognition, {
 import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
-import { notifyError } from "../utils/tostify";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -14,30 +13,17 @@ const Home = () => {
   const [update, setUpdate] = useState(null);
   const [admin, setAdmin] = useState(false);
 
-  useEffect(() => {
-    if (localStorage.getItem("Tocken")) {
-      validateTocken(localStorage.getItem("Tocken"));
-    } else {
-      notifyError("Please Login First");
-      setTimeout(() => {
-        Navigate("/login", { replace: true });
-      }, 1000);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (localStorage.getItem("Tocken")) {
+  //     validateTocken(localStorage.getItem("Tocken"));
+  //   } else {
+  //     notifyError("Please Login First");
+  //     Navigate("/login", { replace: true });
+      
+  //   }
+  // }, []);
 
-  const validateTocken = async (Tocken) => {
-    const response = await fetch("http://localhost:5000/validate", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ Token: Tocken }),
-    });
-    if (response.ok) {
-      let res = await response.json();
-      if (res.status && res.type == "admin") {
-        setAdmin(true);
-      }
-    }
-  };
+  
 
   const {
     transcript,
