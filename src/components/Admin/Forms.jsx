@@ -33,7 +33,9 @@ const Forms = (props) => {
       setOpen(response.status);
       setmessage(response.message);
     } catch (e) {
-      console.error(e);
+      console.error(e)
+      setmessage("Some Error Occured");
+      setOpen(true);
     }
   };
 

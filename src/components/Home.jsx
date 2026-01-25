@@ -5,6 +5,7 @@ import SpeechRecognition, {
 import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
+import ProtectRoute from "./Authentication/protectRoute";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -12,6 +13,13 @@ const Home = () => {
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
   const [admin, setAdmin] = useState(false);
+  
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   // useEffect(() => {
   //   if (localStorage.getItem("Tocken")) {
@@ -23,14 +31,26 @@ const Home = () => {
   //   }
   // }, []);
 
-  
+  //UseEffects
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    console.log("what user said: ", transcript);
+    if (transcript) {
+      fetchSearch(transcript);
+    }
+  }, [transcript]);
+
+  useEffect(() => {
+    setSearchTerm("");
+  }, [listening]);
+
+  //UseEffects
+  
+  //Functions
 
   const fetchSearch = async (text) => {
     if (!text) {
@@ -57,21 +77,6 @@ const Home = () => {
   };
 
   const debouncedSearch = debounce((q) => fetchSearch(q), 500);
-
-  useEffect(() => {
-    debouncedSearch(searchTerm);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    console.log("what user said: ", transcript);
-    if (transcript) {
-      fetchSearch(transcript);
-    }
-  }, [transcript]);
-
-  useEffect(() => {
-    setSearchTerm("");
-  }, [listening]);
 
   const handleTextChange = (e) => {
     setSearchTerm(e.target.value);
@@ -128,8 +133,11 @@ const Home = () => {
     }
   };
 
+  //functions 
+
   return (
     <>
+    <ProtectRoute/>
       <Nav active="Home" />
       <div className="container mx-auto mt-20 text-center align-middle">
         <button onClick={handleStart}>(🎤 Mic)</button>

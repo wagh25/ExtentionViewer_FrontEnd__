@@ -1,8 +1,55 @@
 import React from "react";
 import Nav from "../nav";
+import { useNavigate } from "react-router-dom";
+import { notifyError, notifySuccess } from "../../utils/tostify";
+import { useContext } from "react";
+import { UserContext } from "../../Context/userContext";
 
 const Authentication = (props) => {
-  const handleSubmit = () => {};
+  const Navigate = useNavigate();
+  const {user, setUser} = useContext(UserContext);
+
+   const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      let payload = {
+        ...(props.Action == "Signup"
+          ? {
+              name: e.target[0].value,
+              lastName: e.target[1].value,
+              email: e.target[2].value,
+              password: e.target[3].value,
+              ConfirmPass: e.target[4].value,
+            }
+          : { email: e.target[0].value, password: e.target[1].value }),
+      };
+
+      console.log("payload", payload, props.Action);
+      let response = await fetch(
+        `http://localhost:5000/auth/${props.Action.toLowerCase()}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      response = await response.json();
+
+      if (response.status && props.Action === "Login") {
+        localStorage.setItem("Tocken", response.Tocken);
+        notifySuccess(response.message);
+        Navigate("/", { replace: true });
+      }else if(response.status && props.Action==="Signup"){
+        // notifySuccess(response.message);
+        Navigate("/login", { replace: true });
+      } else {
+        notifyError(response.message);
+      }
+    } catch (e) {
+      console.error(e)
+      notifyError("Some Error Occured");
+    }
+  };
   return (
     <>
       <Nav active={props.Action} />
@@ -56,7 +103,7 @@ const Authentication = (props) => {
             <input
               className="my-2 px-3 py-2 bg-green-600 text-white rounded cursor-pointer hover:bg-green-700 transition-all"
               type="submit"
-              value="Login"
+              value={props.Action}
             />
             
           </form>

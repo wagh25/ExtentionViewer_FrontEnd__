@@ -1,11 +1,13 @@
 import React from "react";
 import { notifyError } from "../../utils/tostify";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "../../Context/userContext";  
 
-
-const ProtectRoute = ({ setIsAuthenticated }) => {
+const ProtectRoute = () => {
   const Navigate = useNavigate();
-  const Location =useLocation
+  const Location =useLocation;
+  const {user, setUser} = useContext(UserContext);
 
   const validateTocken = async (Tocken) => {
     const response = await fetch("http://localhost:5000/validate", {
@@ -16,19 +18,21 @@ const ProtectRoute = ({ setIsAuthenticated }) => {
     if (response.ok) {
       let res = await response.json();
       if (res.status) {
-        setIsAuthenticated(true);
-        if(Location.pathname==="/login" || Location.pathname==="/signup"){
+        setUser({...user, isAuthenticated: true} );
           Navigate("/", { replace: true });
-        }
+        }else{
+        setUser({...user, isAuthenticated: false} );
+        notifyError("You Are Not AAuthorized");
+        Navigate("/login", { replace: true });
       }
     }
   };
 
   React.useEffect(() => {
-    if (localStorage.getItem("Tocken")) {
+    if (localStorage.getItem("Tocken") && user.isAuthenticated) {
       validateTocken(localStorage.getItem("Tocken"));
     } else {
-      notifyError("Please Login First");
+      notifyError("You Are Not Authenticated Yet!");
       Navigate("/login", { replace: true });
     }
   }, []);

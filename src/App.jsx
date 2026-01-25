@@ -5,10 +5,9 @@ import Forms from "./components/Admin/Forms";
 import Authentication from "./components/Authentication/Authentication";
 import ProtectRoute from "./components/Authentication/protectRoute";  
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   return (
     <>
-    <ProtectRoute setIsAuthenticated={setIsAuthenticated}/>
+    <ProtectRoute/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Authentication Action="Login" />} />
