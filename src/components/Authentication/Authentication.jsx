@@ -37,10 +37,12 @@ const Authentication = (props) => {
 
       if (response.status && props.Action === "Login") {
         localStorage.setItem("Tocken", response.Tocken);
-        notifySuccess(response.message);
+        setUser({...user, isAuthenticated: true, name: response.name, email: response.email});
+        console.log(user)
+        notifySuccess("Login Successful");
         Navigate("/", { replace: true });
       }else if(response.status && props.Action==="Signup"){
-        // notifySuccess(response.message);
+        notifySuccess(response.message);
         Navigate("/login", { replace: true });
       } else {
         notifyError(response.message);

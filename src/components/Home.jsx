@@ -20,17 +20,7 @@ const Home = () => {
     resetTranscript,
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
-
-  // useEffect(() => {
-  //   if (localStorage.getItem("Tocken")) {
-  //     validateTocken(localStorage.getItem("Tocken"));
-  //   } else {
-  //     notifyError("Please Login First");
-  //     Navigate("/login", { replace: true });
-      
-  //   }
-  // }, []);
-
+  
   //UseEffects
 
   useEffect(() => {

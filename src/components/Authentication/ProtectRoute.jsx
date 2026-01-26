@@ -10,7 +10,7 @@ const ProtectRoute = () => {
   const {user, setUser} = useContext(UserContext);
 
   const validateTocken = async (Tocken) => {
-    const response = await fetch("http://localhost:5000/validate", {
+    const response = await fetch("http://localhost:5000/auth/validate", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ Token: Tocken }),
@@ -22,15 +22,20 @@ const ProtectRoute = () => {
           Navigate("/", { replace: true });
         }else{
         setUser({...user, isAuthenticated: false} );
-        notifyError("You Are Not AAuthorized");
+        notifyError("You Are Not Authorized");
         Navigate("/login", { replace: true });
       }
     }
   };
 
   React.useEffect(() => {
+    console.log('token',localStorage.getItem("Tocken") , "isauthenticated" ,user.isAuthenticated)
     if (localStorage.getItem("Tocken") && user.isAuthenticated) {
+      if(Location.pathname==="/login" || Location.pathname==="/signup"){
+        Navigate("/", { replace: true });
+      }
       validateTocken(localStorage.getItem("Tocken"));
+
     } else {
       notifyError("You Are Not Authenticated Yet!");
       Navigate("/login", { replace: true });
