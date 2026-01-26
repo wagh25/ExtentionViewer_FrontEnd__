@@ -4,10 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../../Context/userContext";  
 
-const ProtectRoute = () => {
+const ProtectRoute = ({ children }) => {
   const Navigate = useNavigate();
-  const Location =useLocation;
-  const {user, setUser} = useContext(UserContext);
+  const Location = useLocation();
+  const { user } = useContext(UserContext);
 
   const validateTocken = async (Tocken) => {
     const response = await fetch("http://localhost:5000/auth/validate", {
@@ -17,11 +17,7 @@ const ProtectRoute = () => {
     });
     if (response.ok) {
       let res = await response.json();
-      if (res.status) {
-        setUser({...user, isAuthenticated: true} );
-          Navigate("/", { replace: true });
-        }else{
-        setUser({...user, isAuthenticated: false} );
+      if (!res.status) {
         notifyError("You Are Not Authorized");
         Navigate("/login", { replace: true });
       }
@@ -29,19 +25,25 @@ const ProtectRoute = () => {
   };
 
   React.useEffect(() => {
-    console.log('token',localStorage.getItem("Tocken") , "isauthenticated" ,user.isAuthenticated)
-    if (localStorage.getItem("Tocken") && user.isAuthenticated) {
-      if(Location.pathname==="/login" || Location.pathname==="/signup"){
+    const token = localStorage.getItem("Tocken");
+    const isAuthenticated = user.isAuthenticated;
+    
+    console.log('token', token, "isAuthenticated", isAuthenticated);
+    
+    if (token && isAuthenticated) {
+      if (Location.pathname === "/login" || Location.pathname === "/signup") {
         Navigate("/", { replace: true });
       }
-      validateTocken(localStorage.getItem("Tocken"));
-
-    } else {
+      validateTocken(token);
+    } else if (!token || isAuthenticated == false) {
       notifyError("You Are Not Authenticated Yet!");
       Navigate("/login", { replace: true });
     }
-  }, []);
-  return null;
+  }, [user.isAuthenticated, Location.pathname]);
+  
+  
+  
+  return children;
 };
 
 export default ProtectRoute;

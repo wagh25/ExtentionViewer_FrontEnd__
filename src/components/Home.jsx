@@ -5,7 +5,6 @@ import SpeechRecognition, {
 import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
-import ProtectRoute from "./Authentication/protectRoute";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -127,7 +126,6 @@ const Home = () => {
 
   return (
     <>
-    <ProtectRoute/>
       <Nav active="Home" />
       <div className="container mx-auto mt-20 text-center align-middle">
         <button onClick={handleStart}>(🎤 Mic)</button>

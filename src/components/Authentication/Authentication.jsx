@@ -36,9 +36,11 @@ const Authentication = (props) => {
       response = await response.json();
 
       if (response.status && props.Action === "Login") {
+        console.log("response", response);
+        const userData = {...user, isAuthenticated: true, name: response.name, userType: response.userType};
         localStorage.setItem("Tocken", response.Tocken);
-        setUser({...user, isAuthenticated: true, name: response.name, email: response.email});
-        console.log(user)
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
         notifySuccess("Login Successful");
         Navigate("/", { replace: true });
       }else if(response.status && props.Action==="Signup"){

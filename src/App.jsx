@@ -3,7 +3,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Forms from "./components/Admin/Forms";
 import Authentication from "./components/Authentication/Authentication";
-import ProtectRoute from "./components/Authentication/protectRoute";  
+import ProtectRoute from "./components/Authentication/ProtectRoute";  
 function App() {
   return (
     <>
@@ -11,8 +11,8 @@ function App() {
       <Routes>
         
         <Route path="/" element={<ProtectRoute><Home /></ProtectRoute>} />
-        <Route path="/login" element={<Authentication Action="Login" />} />
-        <Route path="/signup" element={<Authentication Action="Signup" />} />
+        <Route path="/login" element={<ProtectRoute><Authentication Action="Login" /></ProtectRoute>} />
+        <Route path="/signup" element={<ProtectRoute><Authentication Action="Signup" /></ProtectRoute>} />
         <Route path="/admin" element={<ProtectRoute><Forms Action="Add" /></ProtectRoute>} />
         <Route path="/admin/update" element={<ProtectRoute><Forms Action="Update" /></ProtectRoute>} />
         <Route path="/admin/delete" element={<ProtectRoute><Forms Action="Delete" /></ProtectRoute>} />
