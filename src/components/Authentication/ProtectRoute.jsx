@@ -7,7 +7,7 @@ import { UserContext } from "../../Context/userContext";
 const ProtectRoute = ({ children }) => {
   const Navigate = useNavigate();
   const Location = useLocation();
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
 
   const validateTocken = async (Tocken) => {
     const response = await fetch("http://localhost:5000/auth/validate", {

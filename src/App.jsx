@@ -12,7 +12,7 @@ function App() {
         
         <Route path="/" element={<ProtectRoute><Home /></ProtectRoute>} />
         <Route path="/login" element={<ProtectRoute><Authentication Action="Login" /></ProtectRoute>} />
-        <Route path="/signup" element={<ProtectRoute><Authentication Action="Signup" /></ProtectRoute>} />
+        <Route path="/signup" element={<Authentication Action="Signup" />} />
         <Route path="/admin" element={<ProtectRoute><Forms Action="Add" /></ProtectRoute>} />
         <Route path="/admin/update" element={<ProtectRoute><Forms Action="Update" /></ProtectRoute>} />
         <Route path="/admin/delete" element={<ProtectRoute><Forms Action="Delete" /></ProtectRoute>} />

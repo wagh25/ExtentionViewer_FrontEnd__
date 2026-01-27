@@ -1,6 +1,13 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
+import { UserContext } from "../Context/userContext";
+
+
+
 const Nav = (props) => {
+  const {user} = React.useContext(UserContext);
+  const navigate = useNavigate();
+  const admin = user.userType === "admin";
   return (
     <nav className="w-full bg-amber-200 text-black shadow-lg">
       <div className="max-w-6xl mx-auto px-4">
@@ -47,7 +54,7 @@ const Nav = (props) => {
                 Home
               </Link>
 
-              <Link
+              {admin && (<><Link
                 to="/admin"
                 className={
                   props.active == "Add"
@@ -78,7 +85,18 @@ const Nav = (props) => {
                 }
               >
                 Delete User
-              </Link>
+              </Link> 
+              
+              </>)}
+              <button  className=" text-amber-950 hover:text-blue-500 transition-all duration-200"
+                onClick={() => {
+                  localStorage.removeItem("Tocken"); 
+                  localStorage.removeItem("user");
+                  navigate("/login");
+                }}
+              >
+                Logout
+              </button>
             </div>
           )}
         </div>

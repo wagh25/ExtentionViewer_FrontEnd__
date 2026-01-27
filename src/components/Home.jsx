@@ -1,17 +1,19 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../Context/userContext";
 
 const Home = () => {
   const Navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
-  const [admin, setAdmin] = useState(false);
+  const { user } = useContext(UserContext);
+  const admin = user.userType === "admin";
   
   const {
     transcript,
