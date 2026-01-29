@@ -37,7 +37,7 @@ const Authentication = (props) => {
 
       if (response.status && props.Action === "Login") {
         console.log("response", response);
-        const userData = {...user, isAuthenticated: true, name: response.name, userType: response.userType};
+        const userData = {...user, isAuthenticated: true, name: response.name, userType: response.userType, email: response.email};
         localStorage.setItem("Tocken", response.Tocken);
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
