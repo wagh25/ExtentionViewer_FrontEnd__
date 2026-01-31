@@ -8,15 +8,20 @@ const Forms = (props) => {
     console.log("clicked");
     e.preventDefault();
     try {
-      let payload = {
+      let payload = { 
+        ...(props.Action == "Add" && {
         name: e.target[0].value,
         lastName: e.target[1].value,
+        ConfirmPassword: e.target[4].value,
+      }),
+        email: e.target[props.Action == "Add" ? 2 : 0].value,
+        password: e.target[props.Action == "Add" ? 3 : 1].value,
         ...(props.Action == "Update"
           ? {
               oldNumber: e.target[2].value,
               number: e.target[3].value,
             }
-          : { number: e.target[2].value }),
+          : { number: e.target[props.Action == "Add" ? 5 : 2].value }),
       };
 
       console.log("payload", payload, props.Action);
@@ -30,7 +35,7 @@ const Forms = (props) => {
       );
       response = await response.json();
 
-      setOpen(response.status);
+      setOpen(true);
       setmessage(response.message);
     } catch (e) {
       console.error(e)
@@ -73,7 +78,7 @@ const Forms = (props) => {
               onSubmit={handleSubmit}
               className="flex flex-col bg-white p-6 rounded-xl shadow-lg w-[90vw] max-w-md"
             >
-              <input
+              {props.Action == "Add" ?<><input
                 name="name"
                 className="my-2 px-3 py-2 border rounded"
                 placeholder="Name"
@@ -84,6 +89,19 @@ const Forms = (props) => {
                 className="my-2 px-3 py-2 border rounded"
                 placeholder="Last Name"
                 type="text"
+              /></> : ""}
+
+              <input
+                name="email"
+                className="my-2 px-3 py-2 border rounded"
+                placeholder="Email"
+                type="text"
+              />
+              <input
+                name="password"
+                className="my-2 px-3 py-2 border rounded"
+                placeholder="Password"
+                type="password"
               />
               {props.Action == "Update" ? (
                 <input
@@ -91,6 +109,16 @@ const Forms = (props) => {
                   className="my-2 px-3 py-2 border rounded"
                   placeholder="Number"
                   type="Number"
+                />
+              ) : (
+                ""
+              )}
+              {props.Action == "Add" ? (
+                <input
+                  name="ConfirmPassword"
+                  className="my-2 px-3 py-2 border rounded"
+                  placeholder="Confirm Password"
+                  type="password"
                 />
               ) : (
                 ""

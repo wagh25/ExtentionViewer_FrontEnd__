@@ -86,7 +86,7 @@ const Home = () => {
   };
 
   const handleDelete = async (u) => {
-    console.log(u);
+    console.log('Deleting user:', u);
     try {
       const response = await fetch("http://localhost:5000/delete", {
         method: "POST",

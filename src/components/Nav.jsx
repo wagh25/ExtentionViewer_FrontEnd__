@@ -88,27 +88,7 @@ const Nav = (props) => {
                     Add User
                   </Link>
 
-                  <Link
-                    to="/admin/update"
-                    className={
-                      props.active == "Update"
-                        ? "text-blue-700"
-                        : "text-amber-950 hover:text-blue-500 transition-all duration-200"
-                    }
-                  >
-                    Update User
-                  </Link>
-
-                  <Link
-                    to="/admin/delete"
-                    className={
-                      props.active == "Delete"
-                        ? "text-blue-700"
-                        : "text-amber-950 hover:text-blue-500 transition-all duration-200"
-                    }
-                  >
-                    Delete User
-                  </Link>
+                  
                 </>
               )}
               {props.active == "Login" || props.active == "Signup" ? (
