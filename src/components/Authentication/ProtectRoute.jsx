@@ -36,10 +36,15 @@ const ProtectRoute = ({ children }) => {
 
     console.log("token", token, "isAuthenticated", isAuthenticated);
 
+    if (isAuthenticated === undefined) {
+      Navigate("/login", { replace: true });
+      return;
+    }
+
     if (token && isAuthenticated) {
       validateTocken(token);
     } else if (!token || isAuthenticated == false) {
-      notifyError("You Are Not Authenticated Yet!");
+      notifyError("You Are Not Authenticated !");
       Navigate("/login", { replace: true });
     }
   }, [user.isAuthenticated, Location.pathname]);

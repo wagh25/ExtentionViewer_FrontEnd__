@@ -6,22 +6,25 @@ import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../Context/userContext";
+import { notifyError, notifySuccess } from "../utils/tostify";
+import { del, u } from "framer-motion/client";
 
 const Home = () => {
   const Navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
+  const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useContext(UserContext);
   const admin = user.userType === "admin";
-  
+
   const {
     transcript,
     listening,
     resetTranscript,
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
-  
+
   //UseEffects
 
   useEffect(() => {
@@ -40,7 +43,7 @@ const Home = () => {
   }, [listening]);
 
   //UseEffects
-  
+
   //Functions
 
   const fetchSearch = async (text) => {
@@ -85,46 +88,61 @@ const Home = () => {
     }
   };
 
-  const handleDelete = async (u) => {
-    console.log('Deleting user:', u);
+  const handleDelete = async (e, emailToDelete) => {
     try {
       const response = await fetch("http://localhost:5000/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(u),
+        body: JSON.stringify({
+          adminEmail: user.email,
+          password: e.target[0].value,
+          emailToDelete,
+        }),
       });
       console.log("response", response);
       let res = await response.json();
-      alert(res.message);
-      setSearchTerm("");
+      if (res.status) {
+        notifySuccess(res.message);
+        setDeleteUser(null);
+        setResults([]);
+        setSearchTerm("");
+      } else {
+        notifyError(res.message);
+        setDeleteUser(null);
+      }
     } catch (e) {
-      alert(`Some issue Occured`);
+      notifyError(`Some issue Occured`);
     }
   };
 
-  const handleSubmit = async (e, user) => {
+  const handleUpdate = async (e, userEmail) => {
     try {
       user.newNumber = e.target[0].value;
       const response = await fetch("http://localhost:5000/update", {
         method: "post",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
+        body: JSON.stringify({
+          userEmail,
+          newNumber: e.target[0].value,
+          adminEmail: user.email,
+        }),
       });
       if (response.ok) {
         let res = await response.json();
         setUpdate(null);
+        setResults([]);
         setSearchTerm("");
-        alert(res.message);
+        notifySuccess(res.message);
       } else {
-        alert("Some Issue Occured");
+        notifyError("Update Failed");
       }
     } catch (err) {
       console.log(err);
-      alert("Some Issue Occured");
+      notifyError("Some Error Occured");
     }
   };
 
-  //functions 
+  //functions
 
   return (
     <>
@@ -141,7 +159,7 @@ const Home = () => {
         />
         <div className="bg-blend-color" style={{ marginTop: 20 }}>
           {results.length > 0 ? (
-            results.map((u, idx) => (
+            results.map((user, idx) => (
               <div
                 key={idx}
                 className={`p-3 flex ${
@@ -151,37 +169,74 @@ const Home = () => {
                  shadow-sm m-3  border-blue-600`}
               >
                 <span className="text-1xl">
-                  {u.name.toUpperCase() + " " + u.lastName.toUpperCase() + " "}—
-                  {update != idx ? (
-                    u.number
+                  {user.name.toUpperCase() +
+                    " " +
+                    user.lastName.toUpperCase() +
+                    " "}
+                  —
+                  {update != idx && deleteUser != idx ? (
+                    user.number
                   ) : (
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
-                        handleSubmit(e, u);
+                        if (deleteUser == idx) {
+                          handleDelete(e, user.email);
+                        } else {
+                          handleUpdate(e, user.email);
+                        }
                       }}
                     >
                       <input
                         className="mr-2"
                         type="text"
-                        placeholder="Enter New Extention"
+                        placeholder={
+                          update == idx
+                            ? "Enter New Extention"
+                            : "Enter Password to Delete"
+                        }
                         name="number"
                       />
-                      <input type="submit" value="Save" />
+                      <input
+                        type="submit"
+                        value={update == idx ? "Update" : "Delete"}
+                      />
                     </form>
                   )}
                 </span>
 
                 {admin ? (
                   <div>
-                    <button className="mr-2" onClick={() => handleDelete(u)}>
-                      Delete
-                    </button>
-                    <button className="mr-2" onClick={() => setUpdate(idx)}>
-                      Update
-                    </button>
-                    {update == idx ? (
-                      <button className="mr-2" onClick={() => setUpdate(null)}>
+                    {update == idx || deleteUser == idx ? null : (
+                      <button
+                        className="mr-2"
+                        onClick={() => {
+                          setDeleteUser(idx);
+                          setUpdate(null);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {update == idx || deleteUser == idx ? null : (
+                      <button
+                        className="mr-2"
+                        onClick={() => {
+                          setUpdate(idx);
+                          setDeleteUser(null);
+                        }}
+                      >
+                        Update
+                      </button>
+                    )}
+                    {update == idx || deleteUser == idx ? (
+                      <button
+                        className="mr-2"
+                        onClick={() => {
+                          setUpdate(null);
+                          setDeleteUser(null);
+                        }}
+                      >
                         Cancel
                       </button>
                     ) : (

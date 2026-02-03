@@ -13,7 +13,10 @@ const Nav = (props) => {
       let Response = await fetch("http://localhost:5000/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Token: localStorage.getItem("Tocken") , email: user.email }),
+        body: JSON.stringify({
+          Token: localStorage.getItem("Tocken"),
+          email: user.email,
+        }),
       });
       Response = await Response.json();
       if (Response.status) {
@@ -51,7 +54,7 @@ const Nav = (props) => {
               >
                 Login
               </Link>
-              <Link
+              {/* <Link
                 to="/signup"
                 className={
                   props.active == "Signup"
@@ -60,7 +63,7 @@ const Nav = (props) => {
                 }
               >
                 Sign-up
-              </Link>
+              </Link> */}
             </div>
           ) : (
             <div className="flex gap-6 text-lg">
@@ -87,8 +90,6 @@ const Nav = (props) => {
                   >
                     Add User
                   </Link>
-
-                  
                 </>
               )}
               {props.active == "Login" || props.active == "Signup" ? (

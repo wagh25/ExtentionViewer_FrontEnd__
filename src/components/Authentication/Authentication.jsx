@@ -7,9 +7,9 @@ import { UserContext } from "../../Context/userContext";
 
 const Authentication = (props) => {
   const Navigate = useNavigate();
-  const {user, setUser} = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
 
-   const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       let payload = {
@@ -19,7 +19,8 @@ const Authentication = (props) => {
               lastName: e.target[1].value,
               email: e.target[2].value,
               password: e.target[3].value,
-              ConfirmPass: e.target[4].value,
+              ConfirmPassword: e.target[4].value,
+              number: e.target[5]?.value || "",
             }
           : { email: e.target[0].value, password: e.target[1].value }),
       };
@@ -31,26 +32,32 @@ const Authentication = (props) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
       response = await response.json();
 
       if (response.status && props.Action === "Login") {
         console.log("response", response);
-        const userData = {...user, isAuthenticated: true, name: response.name, userType: response.userType, email: response.email};
+        const userData = {
+          ...user,
+          isAuthenticated: true,
+          name: response.name,
+          userType: response.userType,
+          email: response.email,
+        };
         localStorage.setItem("Tocken", response.Tocken);
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
         notifySuccess("Login Successful");
         Navigate("/", { replace: true });
-      }else if(response.status && props.Action==="Signup"){
+      } else if (response.status && props.Action === "Signup") {
         notifySuccess(response.message);
         Navigate("/login", { replace: true });
       } else {
         notifyError(response.message);
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
       notifyError("Some Error Occured");
     }
   };
@@ -58,24 +65,27 @@ const Authentication = (props) => {
     <>
       <Nav active={props.Action} />
       <div className="relative w-full h-screen flex flex-row items-center justify-center overflow-hidden ">
-        
         <div className="relative z-10">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col bg-white p-6 rounded-xl shadow-lg w-[90vw] max-w-md"
           >
             {props.Action === "Signup" ? (
-              <><input
-                name="name"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="name"
-                type="name" />
-                
+              <>
+                <input
+                  name="name"
+                  className="my-2 px-3 py-2 border rounded"
+                  placeholder="name"
+                  type="name"
+                />
+
                 <input
                   name="lastName"
                   className="my-2 px-3 py-2 border rounded"
                   placeholder="Last Name"
-                  type="text" /></>
+                  type="text"
+                />
+              </>
             ) : (
               ""
             )}
@@ -85,7 +95,7 @@ const Authentication = (props) => {
               placeholder="email"
               type="email"
             />
-            
+
             <input
               name="password"
               className="my-2 px-3 py-2 border rounded"
@@ -94,12 +104,20 @@ const Authentication = (props) => {
             />
 
             {props.Action === "Signup" ? (
-              <input
-                name="ConfirmPass"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="Confirm Password"
-                type="password" />
-                
+              <>
+                <input
+                  name="ConfirmPass"
+                  className="my-2 px-3 py-2 border rounded"
+                  placeholder="Confirm Password"
+                  type="password"
+                />
+                <input
+                  name="number"
+                  className="my-2 px-3 py-2 border rounded"
+                  placeholder="Number"
+                  type="number"
+                />
+              </>
             ) : (
               ""
             )}
@@ -109,7 +127,6 @@ const Authentication = (props) => {
               type="submit"
               value={props.Action}
             />
-            
           </form>
         </div>
       </div>
