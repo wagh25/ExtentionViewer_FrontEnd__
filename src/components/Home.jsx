@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, use } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
@@ -7,7 +7,7 @@ import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../Context/userContext";
 import { notifyError, notifySuccess } from "../utils/tostify";
-import { del, u } from "framer-motion/client";
+import { io } from "socket.io-client";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -17,6 +17,7 @@ const Home = () => {
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useContext(UserContext);
   const admin = user.userType === "admin";
+  const socket = io("http://localhost:5000");
 
   const {
     transcript,
@@ -42,10 +43,20 @@ const Home = () => {
     setSearchTerm("");
   }, [listening]);
 
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to socket server", socket);
+    });
+  }, []);
+
   //UseEffects
 
   //Functions
 
+  const handleCall = (user) => {
+    console.log("Calling user:", user);
+    socket.emit("callUser", { email: user.email });
+  };
   const fetchSearch = async (text) => {
     if (!text) {
       setResults([]);
@@ -242,6 +253,16 @@ const Home = () => {
                     ) : (
                       ""
                     )}
+                    <button
+                      className="mr-2"
+                      onClick={() => {
+                        setUpdate(null);
+                        setDeleteUser(null);
+                        handleCall(user);
+                      }}
+                    >
+                      call
+                    </button>
                   </div>
                 ) : (
                   ""
