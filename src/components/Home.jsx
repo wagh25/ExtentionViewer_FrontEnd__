@@ -45,7 +45,8 @@ const Home = () => {
 
   useEffect(() => {
     socket.on("connect", () => {
-      console.log("Connected to socket server", socket);
+      console.log("Connected to socket server", socket.id);
+      socket.emit("registerUser", user.email);
     });
   }, []);
 
@@ -55,7 +56,7 @@ const Home = () => {
 
   const handleCall = (user) => {
     console.log("Calling user:", user);
-    socket.emit("callUser", { email: user.email });
+    socket.emit("callUser", user.email);
   };
   const fetchSearch = async (text) => {
     if (!text) {
