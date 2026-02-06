@@ -34,7 +34,7 @@ const ProtectRoute = ({ children }) => {
     const token = localStorage.getItem("Tocken");
     const isAuthenticated = user.isAuthenticated;
 
-    console.log("token", token, "isAuthenticated", isAuthenticated);
+    // console.log("token", token, "isAuthenticated", isAuthenticated);
 
     if (isAuthenticated === undefined) {
       Navigate("/login", { replace: true });

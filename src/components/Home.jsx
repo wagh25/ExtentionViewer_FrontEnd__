@@ -7,7 +7,8 @@ import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../Context/userContext";
 import { notifyError, notifySuccess } from "../utils/tostify";
-import { io } from "socket.io-client";
+import { socket } from "../Services/socket.io";
+import { FaPhoneAlt } from "react-icons/fa";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -17,7 +18,6 @@ const Home = () => {
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useContext(UserContext);
   const admin = user.userType === "admin";
-  const socket = io("http://localhost:5000");
 
   const {
     transcript,
@@ -48,15 +48,23 @@ const Home = () => {
       console.log("Connected to socket server", socket.id);
       socket.emit("registerUser", user.email);
     });
+
+    socket.on("receiveMessage", (data) => {
+      console.log("Message received:", data);
+      notifySuccess(data.message);
+    });
   }, []);
 
   //UseEffects
 
   //Functions
 
-  const handleCall = (user) => {
-    console.log("Calling user:", user);
-    socket.emit("callUser", user.email);
+  const handleCall = (touser) => {
+    console.log("Calling user:", touser);
+    socket.emit("callUser", touser.email);
+    socket.emit("message",{message:`You are being called by ${user.name}`,
+      toemail:touser.email,
+    })
   };
   const fetchSearch = async (text) => {
     if (!text) {
@@ -71,7 +79,7 @@ const Home = () => {
       });
       if (resp.ok) {
         const data = await resp.json();
-        console.log("data", data);
+        // console.log("data", data);
         setResults(data.users || data); // adjust based on your API response shape
       } else {
         setResults([]);
@@ -174,9 +182,8 @@ const Home = () => {
             results.map((user, idx) => (
               <div
                 key={idx}
-                className={`p-3 flex ${
-                  admin ? "justify-between" : "justify-center"
-                } items-center 
+                className={`p-3 flex 
+              justify-between  items-center 
                 border-2  rounded-xl
                  shadow-sm m-3  border-blue-600`}
               >
@@ -262,11 +269,22 @@ const Home = () => {
                         handleCall(user);
                       }}
                     >
-                      call
+                      <FaPhoneAlt />
                     </button>
                   </div>
                 ) : (
-                  ""
+                  <div>
+                    <button
+                      className="mr-2"
+                      onClick={() => {
+                        setUpdate(null);
+                        setDeleteUser(null);
+                        handleCall(user);
+                      }}
+                    >
+                      <FaPhoneAlt />
+                    </button>
+                  </div>
                 )}
               </div>
             ))
