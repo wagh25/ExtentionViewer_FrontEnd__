@@ -46,7 +46,6 @@ const Home = () => {
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Connected to socket server", socket.id);
-      socket.emit("registerUser", user.email);
     });
 
     socket.on("receiveMessage", (data) => {
@@ -61,9 +60,9 @@ const Home = () => {
 
   const handleCall = (touser) => {
     console.log("Calling user:", touser);
-    socket.emit("callUser", touser.email);
+    socket.emit("callUser", touser);
     socket.emit("message",{message:`You are being called by ${user.name}`,
-      toemail:touser.email,
+      touser,
     })
   };
   const fetchSearch = async (text) => {

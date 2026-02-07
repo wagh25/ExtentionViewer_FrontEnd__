@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { notifyError, notifySuccess } from "../../utils/tostify";
 import { useContext } from "react";
 import { UserContext } from "../../Context/userContext";
+import { socket } from "../../Services/socket.io";
 
 const Authentication = (props) => {
   const Navigate = useNavigate();
@@ -38,6 +39,8 @@ const Authentication = (props) => {
 
       if (response.status && props.Action === "Login") {
         console.log("response", response);
+        socket.emit("registerUser", response.email);
+        
         const userData = {
           ...user,
           isAuthenticated: true,

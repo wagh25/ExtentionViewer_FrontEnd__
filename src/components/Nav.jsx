@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../Context/userContext";
-import { i } from "framer-motion/client";
+import { socket } from "../Services/socket.io";
 import { notifyError } from "../utils/tostify";
 
 const Nav = (props) => {
@@ -23,6 +23,7 @@ const Nav = (props) => {
         console.log("Logout Successful");
         localStorage.removeItem("Tocken");
         localStorage.removeItem("user");
+        socket.disconnect();
         navigate("/login", { replace: true });
       } else {
         notifyError("Logout Failed. Try Again!");
