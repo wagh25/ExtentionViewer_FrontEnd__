@@ -2,12 +2,12 @@ import React from "react";
 import { notifyError } from "../../utils/tostify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { UserContext } from "../../Context/userContext";
+import { useUserContext } from "../../Context/UserProvider";
 
 const ProtectRoute = ({ children }) => {
   const Navigate = useNavigate();
   const Location = useLocation();
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useUserContext();
 
   const validateTocken = async (Tocken) => {
     const response = await fetch("http://localhost:5000/auth/validate", {

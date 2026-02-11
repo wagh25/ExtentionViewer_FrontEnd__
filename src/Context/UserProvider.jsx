@@ -1,16 +1,17 @@
+import React, { use } from "react";
+import { useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 
-import React from 'react'
-import { UserContext } from './userContext'
-import { useState, useEffect } from 'react'
+const UserContext = createContext();
 
-const UserProvider = ({children}) => {
-  const [user, setUser] = useState({name:"",email:""});
+const UserProvider = ({ children }) => {
+  const [user, setUser] = useState({ name: "", email: "" });
 
   useEffect(() => {
     // On mount, check if there's a token in localStorage
     const token = localStorage.getItem("Tocken");
     const savedUser = localStorage.getItem("user");
-    
+
     if (token && savedUser) {
       // Restore user from localStorage
       setUser(JSON.parse(savedUser));
@@ -26,12 +27,13 @@ const UserProvider = ({children}) => {
 
   return (
     <div>
-      <UserContext.Provider value={{ user, setUser}}>
+      <UserContext.Provider value={{ user, setUser }}>
         {children}
       </UserContext.Provider>
     </div>
-  )
-}
+  );
+};
 
-export default UserProvider
+export const useUserContext = () => useContext(UserContext);
 
+export default UserProvider;

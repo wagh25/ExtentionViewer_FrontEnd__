@@ -1,14 +1,21 @@
-import React, { useState, useEffect, useContext, use } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  use,
+  useCallback,
+} from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import debounce from "lodash.debounce";
 import Nav from "./nav";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../Context/userContext";
+import { useUserContext } from "../Context/UserProvider";
 import { notifyError, notifySuccess } from "../utils/tostify";
 import { socket } from "../Services/socket.io";
 import { FaPhoneAlt } from "react-icons/fa";
+import { usePeerContext } from "../Context/PeerContext";
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -16,7 +23,9 @@ const Home = () => {
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
   const [deleteUser, setDeleteUser] = useState(null);
-  const { user } = useContext(UserContext);
+  const { user } = useUserContext();
+  const { peer, stream,createOffer } = usePeerContext();
+
   const admin = user.userType === "admin";
 
   const {
@@ -52,19 +61,34 @@ const Home = () => {
       console.log("Message received:", data);
       notifySuccess(data.message);
     });
+
+    socket.on("incomingCall", (data) => {
+      const { callerEmail, offer, callerSocketId, message } = data;
+      console.log(offer);
+      notifySuccess(message);
+    });
   }, []);
 
   //UseEffects
 
   //Functions
 
-  const handleCall = (touser) => {
-    console.log("Calling user:", touser);
-    socket.emit("callUser", touser);
-    socket.emit("message",{message:`You are being called by ${user.name}`,
-      touser,
-    })
-  };
+  const handleCall = useCallback(
+    async (touser) => {
+      console.log("Calling user:", touser);
+      const offer = await createOffer();
+      socket.emit("callUser", {
+        touser,
+        offer,
+        message: `You are being called by ${user.name}`,
+      });
+      socket.emit("message", {
+        message: `You are being called by ${user.name}`,
+        touser,
+      });
+    },
+    [peer, socket, user],
+  );
   const fetchSearch = async (text) => {
     if (!text) {
       setResults([]);

@@ -1,11 +1,14 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UserContext } from "../Context/userContext";
+
 import { socket } from "../Services/socket.io";
+
+import { useUserContext } from "../Context/UserProvider";
+
 import { notifyError } from "../utils/tostify";
 
 const Nav = (props) => {
-  const { user } = React.useContext(UserContext);
+  const { user } = useUserContext();
   const navigate = useNavigate();
   const admin = user.userType === "admin";
   const logoutUser = async () => {

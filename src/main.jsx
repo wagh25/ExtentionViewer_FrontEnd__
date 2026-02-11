@@ -6,13 +6,15 @@ import { BrowserRouter } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import UserProvider from "./Context/UserProvider.jsx";
-
+import { PeerProvider } from "./Context/PeerContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <UserProvider>
-    <App />
-    </UserProvider>
+    <PeerProvider>
+      <UserProvider>
+        <App />
+      </UserProvider>
+    </PeerProvider>
     <ToastContainer />
   </BrowserRouter>,
 );

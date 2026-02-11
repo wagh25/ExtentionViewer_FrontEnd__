@@ -3,12 +3,11 @@ import Nav from "../nav";
 import { useNavigate } from "react-router-dom";
 import { notifyError, notifySuccess } from "../../utils/tostify";
 import { useContext } from "react";
-import { UserContext } from "../../Context/userContext";
+import { useUserContext } from "../../Context/UserProvider";
 import { socket } from "../../Services/socket.io";
-
 const Authentication = (props) => {
   const Navigate = useNavigate();
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useUserContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
