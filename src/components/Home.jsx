@@ -9,22 +9,25 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import debounce from "lodash.debounce";
-import Nav from "./nav";
+import Nav from "./Nav";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../Context/UserProvider";
 import { notifyError, notifySuccess } from "../utils/tostify";
 import { socket } from "../Services/socket.io";
 import { FaPhoneAlt } from "react-icons/fa";
 import { usePeerContext } from "../Context/PeerContext";
+// import ReactPlayer from "react-player"
 
 const Home = () => {
   const Navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
+  // const [stream, setStream] = React.useState(null);
+
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useUserContext();
-  const { peer, stream,createOffer } = usePeerContext();
+  const { peer,createOffer ,createAnswer} = usePeerContext();
 
   const admin = user.userType === "admin";
 
@@ -36,6 +39,10 @@ const Home = () => {
   } = useSpeechRecognition();
 
   //UseEffects
+
+  // useEffect(() => {
+  //   getStream()
+  // });
 
   useEffect(() => {
     debouncedSearch(searchTerm);
@@ -53,25 +60,57 @@ const Home = () => {
   }, [listening]);
 
   useEffect(() => {
-    socket.on("connect", () => {
+    const handleConnect =  () => {
       console.log("Connected to socket server", socket.id);
-    });
+    }
+    socket.on("connect", handleConnect);
 
-    socket.on("receiveMessage", (data) => {
+    const handleReceiveMessage = (data) => {
       console.log("Message received:", data);
       notifySuccess(data.message);
-    });
+    }
+    socket.on("receiveMessage", handleReceiveMessage);
 
-    socket.on("incomingCall", (data) => {
-      const { callerEmail, offer, callerSocketId, message } = data;
+    const handleIncomingCall = (data) => {
+      const {  offer, callerSocket, message } = data;
+      createAnswer(offer).then((answer) => {
+        console.log("Answer created:", answer);
+
+        //this part will come on when user click accept button
+        socket.emit("answerCall", {
+          answer,
+          callerSocket
+        });
+      });
+
       console.log(offer);
       notifySuccess(message);
-    });
+        Navigate("/call");
+
+    }
+    socket.on("incomingCall", handleIncomingCall);
+    
+    const handlecallAnswered =(data)=>{
+      const { answer,responderName } = data;
+      console.log("callAnswered:", data);
+      notifySuccess(`${responderName} answered the call`);
+      peer.setRemoteDescription(answer);
+      Navigate("/call");
+    }
+    socket.on("callAnswered", handlecallAnswered);
+    
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("incomingCall", handleIncomingCall);
+      socket.off("callAnswered", handlecallAnswered);
+    };
   }, []);
 
   //UseEffects
 
   //Functions
+
 
   const handleCall = useCallback(
     async (touser) => {
@@ -82,10 +121,7 @@ const Home = () => {
         offer,
         message: `You are being called by ${user.name}`,
       });
-      socket.emit("message", {
-        message: `You are being called by ${user.name}`,
-        touser,
-      });
+
     },
     [peer, socket, user],
   );

@@ -17,6 +17,7 @@ const ProtectRoute = ({ children }) => {
     });
     if (response.ok) {
       let res = await response.json();
+      console.log(res.status);
       if (!res.status) {
         if (Location.pathname != "/login") {
           notifyError("You Are Not Authorized");

@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Forms from "./components/Admin/Forms";
 import Authentication from "./components/Authentication/Authentication";
 import ProtectRoute from "./components/Authentication/ProtectRoute";
+import Call from "./components/Call";
 function App() {
   return (
     <>
@@ -31,6 +32,14 @@ function App() {
           element={
             <ProtectRoute>
               <Forms Action="Add" />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/call"
+          element={
+            <ProtectRoute>
+              <Call />
             </ProtectRoute>
           }
         />

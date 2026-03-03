@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { socket } from "../Services/socket.io";
@@ -11,6 +11,9 @@ const Nav = (props) => {
   const { user } = useUserContext();
   const navigate = useNavigate();
   const admin = user.userType === "admin";
+
+  
+
   const logoutUser = async () => {
     try {
       let Response = await fetch("http://localhost:5000/auth/logout", {
@@ -22,6 +25,7 @@ const Nav = (props) => {
         }),
       });
       Response = await Response.json();
+      console.log("Logout Response:", Response);
       if (Response.status) {
         console.log("Logout Successful");
         localStorage.removeItem("Tocken");
@@ -89,7 +93,7 @@ const Nav = (props) => {
                     className={
                       props.active == "Add"
                         ? "text-blue-700"
-                        : "text-amber-950 hover:text-blue-500 transition-all duration-200"
+                        : "text-amber-950 hover:text-blue-500 transition-all duration-200 font-bold"
                     }
                   >
                     Add User
@@ -100,12 +104,12 @@ const Nav = (props) => {
                 "null"
               ) : (
                 <>
-                  <button
-                    className=" text-amber-950 hover:text-blue-500 transition-all duration-200"
+                  <span
                     onClick={logoutUser}
+                    className="text-amber-950  hover:text-blue-500 transition-all duration-200 cursor-pointer text-lg font-black"
                   >
                     Logout
-                  </button>
+                  </span>
                 </>
               )}
             </div>

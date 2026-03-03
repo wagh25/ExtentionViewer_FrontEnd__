@@ -37,7 +37,8 @@ const Authentication = (props) => {
       response = await response.json();
 
       if (response.status && props.Action === "Login") {
-        console.log("response", response);
+        socket.connect();
+        console.log("registeruser");
         socket.emit("registerUser", response.email);
         
         const userData = {
