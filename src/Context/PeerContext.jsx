@@ -9,11 +9,13 @@ import {
 } from "react";
 
 import { socket } from "../Services/socket.io";
+import { nav } from "framer-motion/client";
 const PeerContext = createContext(null);
 
 export const usePeerContext = () => useContext(PeerContext);
 
 export const PeerProvider = ({ children }) => {
+  const [stream, setStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const peer = useMemo(() => {
     return new RTCPeerConnection({
@@ -22,6 +24,7 @@ export const PeerProvider = ({ children }) => {
   }, []);
 
   const createOffer = useCallback(async () => {
+    await sendStream();
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
     return offer;
@@ -29,6 +32,7 @@ export const PeerProvider = ({ children }) => {
 
   const createAnswer = useCallback(
     async (offer) => {
+      await sendStream();
       await peer.setRemoteDescription(offer);
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
@@ -38,7 +42,9 @@ export const PeerProvider = ({ children }) => {
   );
 
   const sendStream = useCallback(
-    (stream) => {
+    async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setStream(stream);
       stream.getTracks().forEach((track) => {
         peer.addTrack(track, stream);
       });
@@ -79,7 +85,7 @@ export const PeerProvider = ({ children }) => {
 
   return (
     <PeerContext.Provider
-      value={{ peer, createOffer, createAnswer, sendStream, remoteStream }}
+      value={{ peer, createOffer, createAnswer, sendStream, remoteStream , stream }}
     >
       {children}
     </PeerContext.Provider>

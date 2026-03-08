@@ -1,67 +1,67 @@
 import React, { useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { usePeerContext } from '../Context/PeerContext';
-import { nav } from 'framer-motion/client';
-
+import {socket} from "../Services/socket.io";
+import { notifyError,notifySuccess  } from '../utils/tostify';
 
 
 const Call = () => {
-    const [stream, setStream] = React.useState(null);
     const videoRef = useRef(null);
     const remoteVideoRef = useRef(null);
-    const { peer , sendStream , remoteStream } = usePeerContext();
+    const { peer , sendStream , remoteStream , stream } = usePeerContext();
     const Navigate = useNavigate();
 
-    const handleEndcall=useCallback(()=>{
+    const handleEndcall=useCallback((msg)=>{
+      console.log('msg',msg );
+      msg && notifySuccess(msg);
       stream && stream.getTracks().forEach((track) => track.stop());
+      console.log("typeof msg",typeof(msg)  );
+      typeof(msg) != 'string' ? socket.emit('End Call',{id:socket.id}) : null;
       Navigate('/')
-    },[]);
+    },[stream,Navigate]);
 
 
+    // React.useEffect(() => {
+    //   const handleTrackEvent = (event) => {
+    //     const Stream = event.streams[0];
+    //     console.log("Received remote stream:", event);
+    //     setRemoteStream(Stream);
+    //   } }, [setRemoteStream]);
 
-    const getStream = useCallback(async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        setStream(mediaStream);
+    React.useEffect(()=>{
+      socket.on('callEnded',(data)=>{
+        handleEndcall(data.message);
+      })
 
-        sendStream(mediaStream);
-        console.log("Media Stream obtained:", mediaStream);
-        // Attach stream to video element
-        if (videoRef.current) {
+      return ()=>{
+        socket.off('callEnded');
+      }
+    },[handleEndcall]);
 
-          videoRef.current.srcObject = mediaStream;
+    React.useEffect(() => {
+
+        console.log("Stream",stream ,"remoteStream",remoteStream);
+
+      if (videoRef.current && stream) {
+          videoRef.current.srcObject = stream;
         }
-        if (remoteVideoRef.current) {
+        if (remoteVideoRef.current && remoteStream) {
           remoteVideoRef.current.srcObject = remoteStream;
         }
-          console.log("Stream",stream ,"remoteStream",remoteStream);
 
-      } catch (e) {
-        console.error("Error getting media stream:", e);
-      }
-    }, []);
+          console.log("videoRef",videoRef.current.srcObject ,"remoteVideoRef",remoteVideoRef.current.srcObject);
 
-    React.useEffect(() => {
-      getStream();
-    }, []);
 
-    React.useEffect(() => {
-      if (remoteStream && remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
-      } }, []);
+    
+    }, [stream, remoteStream]);
 
 
   return (
     <div>
       <h1>me</h1>
-      {stream ? <video ref={videoRef} autoPlay  playsInline style={{width: '500px',height: '500px'}}/>
-      : ""}
+       <video ref={videoRef} autoPlay  playsInline style={{width: '2000px',height: '500px'}}/>
         <h1>remote</h1>
-      {remoteStream ? <video ref={remoteVideoRef} autoPlay  playsInline style={{width: '500px',height: '500px'}}/>
-      : ""}
+       <video ref={remoteVideoRef} autoPlay  playsInline style={{width: '2000px',height: '500px'}}/>
       <button onClick={handleEndcall}>End Call</button> 
     </div>
   )
