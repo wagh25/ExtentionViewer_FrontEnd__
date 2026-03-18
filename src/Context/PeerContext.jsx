@@ -24,15 +24,15 @@ export const PeerProvider = ({ children }) => {
   }, []);
 
   const createOffer = useCallback(async () => {
-    await sendStream();
+    // await sendStream();
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
     return offer;
-  }, []);
+  }, [peer]);
 
   const createAnswer = useCallback(
     async (offer) => {
-      await sendStream();
+      // await sendStream();
       await peer.setRemoteDescription(offer);
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
@@ -43,10 +43,11 @@ export const PeerProvider = ({ children }) => {
 
   const sendStream = useCallback(
     async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setStream(stream);
-      stream.getTracks().forEach((track) => {
-        peer.addTrack(track, stream);
+        if (stream) return;
+      const Stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setStream(Stream);
+      Stream.getTracks().forEach((track) => {
+        peer.addTrack(track, Stream);
       });
     },
     [peer],
@@ -82,6 +83,21 @@ export const PeerProvider = ({ children }) => {
       }
     };
   }, [peer]);
+
+  useEffect(() => {
+  socket.on("ice-candidate", async (candidate) => {
+    try {
+      console.log("Received ICE candidate:", candidate);
+      await peer.addIceCandidate(candidate);
+    } catch (err) {
+      console.error("Error adding ICE candidate:", err);
+    }
+  });
+
+  return () => {
+    socket.off("ice-candidate");
+  };
+}, [peer]);
 
   return (
     <PeerContext.Provider

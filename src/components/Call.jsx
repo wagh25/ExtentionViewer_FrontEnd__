@@ -42,7 +42,7 @@ const Call = () => {
 
         console.log("Stream",stream ,"remoteStream",remoteStream);
 
-      if (videoRef.current && stream) {
+      if (videoRef.current && stream && remoteStream) {
           videoRef.current.srcObject = stream;
         }
         if (remoteVideoRef.current && remoteStream) {
@@ -53,7 +53,7 @@ const Call = () => {
 
 
     
-    }, [stream, remoteStream]);
+    }, [stream, remoteStream,videoRef,remoteVideoRef]);
 
 
   return (

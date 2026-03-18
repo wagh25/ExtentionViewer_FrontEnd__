@@ -27,7 +27,7 @@ const Home = () => {
 
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useUserContext();
-  const { peer,createOffer ,createAnswer} = usePeerContext();
+  const { peer,createOffer ,createAnswer,sendStream } = usePeerContext();
 
   const admin = user.userType === "admin";
 
@@ -71,8 +71,9 @@ const Home = () => {
     }
     socket.on("receiveMessage", handleReceiveMessage);
 
-    const handleIncomingCall = (data) => {
+    const handleIncomingCall = async (data) => {
       const {  offer, callerSocket, message } = data;
+      await sendStream();
       createAnswer(offer).then((answer) => {
         console.log("Answer created:", answer);
 
@@ -115,6 +116,7 @@ const Home = () => {
   const handleCall = useCallback(
     async (touser) => {
       console.log("Calling user:", touser);
+      await sendStream();
       const offer = await createOffer();
       socket.emit("callUser", {
         touser,
