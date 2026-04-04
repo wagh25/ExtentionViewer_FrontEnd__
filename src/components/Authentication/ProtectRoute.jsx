@@ -20,7 +20,7 @@ const ProtectRoute = ({ children }) => {
       console.log(res.status);
       if (!res.status) {
         if (Location.pathname != "/login") {
-          notifyError("You Are Not Authorized");
+          notifyError("Session Expired Please Login Again !");
           Navigate("/login", { replace: true });
         }
       } else {
@@ -45,7 +45,7 @@ const ProtectRoute = ({ children }) => {
     if (token && isAuthenticated) {
       validateTocken(token);
     } else if (!token || isAuthenticated == false) {
-      notifyError("You Are Not Authenticated !");
+      notifyError("Please Login !");
       Navigate("/login", { replace: true });
     }
   }, [user.isAuthenticated, Location.pathname]);

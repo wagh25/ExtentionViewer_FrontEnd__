@@ -23,11 +23,11 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [update, setUpdate] = useState(null);
-  // const [stream, setStream] = React.useState(null);
+  const [incomingCall, setIncomingCall] = React.useState(null);
 
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useUserContext();
-  const { peer,createOffer ,createAnswer,sendStream } = usePeerContext();
+  const { peer, createOffer, createAnswer, sendStream } = usePeerContext();
 
   const admin = user.userType === "admin";
 
@@ -40,10 +40,11 @@ const Home = () => {
 
   //UseEffects
 
-  // useEffect(() => {
-  //   getStream()
-  // });
-
+  useEffect(() => {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
   useEffect(() => {
     debouncedSearch(searchTerm);
   }, [searchTerm]);
@@ -60,7 +61,7 @@ const Home = () => {
   }, [listening]);
 
   useEffect(() => {
-    const handleConnect =  () => {
+    const handleConnect = () => {
       console.log("Connected to socket server", socket.id);
     }
     socket.on("connect", handleConnect);
@@ -71,35 +72,52 @@ const Home = () => {
     }
     socket.on("receiveMessage", handleReceiveMessage);
 
+
     const handleIncomingCall = async (data) => {
-      const {  offer, callerSocket, message } = data;
-      await sendStream();
-      createAnswer(offer).then((answer) => {
-        console.log("Answer created:", answer);
+      const { offer, callerSocket, message } = data;
 
-        //this part will come on when user click accept button
-        socket.emit("answerCall", {
-          answer,
-          callerSocket
+      if (Notification.permission === "granted") {
+        new Notification("Incoming Call 📞", {
+          body: message,
         });
-      });
+      }
 
-      console.log(offer);
-      notifySuccess(message);
-        Navigate("/call");
+      setIncomingCall(offer, callerSocket, message);
+
+
+
+
+      // await sendStream();
+      // createAnswer(offer).then((answer) => {
+      //   console.log("Answer created:", answer);
+
+      //   //this part will come on when user click accept button
+      //   socket.emit("answerCall", {
+      //     answer,
+      //     callerSocket
+      //   });
+      // });
+
+      // console.log(offer);
+      // notifySuccess(message);
+      //   Navigate("/call");
 
     }
     socket.on("incomingCall", handleIncomingCall);
-    
-    const handlecallAnswered =(data)=>{
-      const { answer,responderName } = data;
+    socket.on('callRejected', (data) => {
+      console.log('data 0', data)
+      notifySuccess(data.message)
+    })
+
+    const handlecallAnswered = (data) => {
+      const { answer, responderName } = data;
       console.log("callAnswered:", data);
       notifySuccess(`${responderName} answered the call`);
       peer.setRemoteDescription(answer);
       Navigate("/call");
     }
     socket.on("callAnswered", handlecallAnswered);
-    
+
     return () => {
       socket.off("connect", handleConnect);
       socket.off("receiveMessage", handleReceiveMessage);
@@ -112,7 +130,34 @@ const Home = () => {
 
   //Functions
 
+  const onCallAnswer = async (data) => {
+    const { offer, callerSocket, message } = data;
+    await sendStream();
+    createAnswer(offer).then((answer) => {
+      // console.log("Answer created:", answer);
+      socket.emit("answerCall", {
+        answer,
+        callerSocket
+      });
+    });
 
+
+    Navigate("/call");
+
+  }
+  const onCallReject = async (data) => {
+    const { socketId } = data;
+
+    //this part will come on when user click accept button
+    socket.emit("rejectCall", {
+      socketId
+    });
+
+
+    setIncomingCall(null)
+    Navigate("/call");
+
+  }
   const handleCall = useCallback(
     async (touser) => {
       console.log("Calling user:", touser);
@@ -353,6 +398,25 @@ const Home = () => {
             <p>No results</p>
           )}
         </div>
+        {incomingCall && (
+          <div className="fixed bottom-5 right-5 bg-white p-4 shadow-lg rounded-xl">
+            <p>{incomingCall.message}</p>
+
+            <button
+              onClick={() => {
+                onCallAnswer(incomingCall)
+              }}
+            >
+              Accept
+            </button>
+
+            <button onClick={() => {
+              onCallReject(incomingCall)
+            }}>
+              Reject
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
