@@ -27,7 +27,7 @@ const Home = () => {
 
   const [deleteUser, setDeleteUser] = useState(null);
   const { user } = useUserContext();
-  const { peer, createOffer, createAnswer, sendStream } = usePeerContext();
+  const { peer, peerRef,createOffer, createAnswer, sendStream } = usePeerContext();
 
   const admin = user.userType === "admin";
 
@@ -108,13 +108,17 @@ const Home = () => {
     socket.on('callRejected', (data) => {
       console.log('data 0', data)
       notifySuccess(data.message)
+      if(peerRef.current){
+        peerRef.current.close();
+        peerRef.current = null;
+      }
     })
 
     const handlecallAnswered = (data) => {
       const { answer, responderName } = data;
       console.log("callAnswered:", data);
       notifySuccess(`${responderName} answered the call`);
-      peer.setRemoteDescription(answer);
+      peerRef.current.setRemoteDescription(answer);
       Navigate("/call");
     }
     socket.on("callAnswered", handlecallAnswered);
@@ -133,7 +137,7 @@ const Home = () => {
 
   const onCallAnswer = async (data) => {
     const { offer, callerSocket, message } = data;
-    await sendStream();
+    // await sendStream();
     createAnswer(offer).then((answer) => {
       console.log("Answer created:", answer);
       socket.emit("answerCall", {
@@ -149,9 +153,8 @@ const Home = () => {
   const onCallReject = async (data) => {
     const { socketId } = data;
 
-    //this part will come on when user click accept button
     socket.emit("rejectCall", {
-      socketId
+      'rejecterSocket': socketId,
     });
 
 
@@ -162,7 +165,7 @@ const Home = () => {
   const handleCall = useCallback(
     async (touser) => {
       console.log("Calling user:", touser);
-      await sendStream();
+      // await sendStream();
       const offer = await createOffer();
       socket.emit("callUser", {
         touser,

@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -17,72 +18,99 @@ export const usePeerContext = () => useContext(PeerContext);
 export const PeerProvider = ({ children }) => {
   const [stream, setStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-  const peer = useMemo(() => {
-    return new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-  }, []);
+  const [peer ,setPeer] = useState(null);
+  const peerRef = useRef(null);
+
+  // const peer = useMemo(() => {
+  //   return new RTCPeerConnection({
+  //     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  //   });
+  // }, []);
+
+  const createPeerConnection = () => {
+  const newPeer = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
+
+  // attach events again
+  newPeer.ontrack = (event) => {
+    setRemoteStream(event.streams[0]);
+  };
+
+  newPeer.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit("ice-candidate", event.candidate);
+    }
+  };
+
+  peerRef.current = newPeer;
+  return newPeer;
+};
 
   const createOffer = useCallback(async () => {
-    // await sendStream();
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
+    let currentPeer = createPeerConnection();
+    setPeer(currentPeer);
+    await sendStream(currentPeer);
+    const offer = await currentPeer.createOffer();
+    await currentPeer.setLocalDescription(offer);
     return offer;
   }, [peer]);
 
   const createAnswer = useCallback(
     async (offer) => {
-      // await sendStream();
-      await peer.setRemoteDescription(offer);
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
+    let currentPeer = createPeerConnection();
+    setPeer(currentPeer);
+      await sendStream(currentPeer);
+      await currentPeer.setRemoteDescription(offer);
+      const answer = await currentPeer.createAnswer();
+      await currentPeer.setLocalDescription(answer);
       return answer;
     },
     [peer],
   );
 
   const sendStream = useCallback(
-    async () => {
+    async (currentPeer) => {
         if (stream) return;
       const Stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setStream(Stream);
       Stream.getTracks().forEach((track) => {
-        peer.addTrack(track, Stream);
+        currentPeer.addTrack(track, Stream);
       });
     },
     [peer],
   );
 
-  useEffect(() => {
-    const handleTrackEvent = (event) => {
-      const Stream = event.streams[0];
-      console.log("Received remote stream:", event);
-      setRemoteStream(Stream);
-    };
-    peer.addEventListener("track", handleTrackEvent);
+  // useEffect(() => {
+  //   const handleTrackEvent = (event) => {
+  //     const Stream = event.streams[0];
+  //     console.log("Received remote stream:", event);
+  //     setRemoteStream(Stream);
+  //   };
+  //   peer.addEventListener("track", handleTrackEvent);
 
-    return () => {
-      peer.removeEventListener("track", handleTrackEvent);
-    };
-  }, [peer]);
+  //   return () => {
+  //     peer.removeEventListener("track", handleTrackEvent);
+  //   };
+  // }, [peer]);
 
-  useEffect(() => {
-    peer.onconnectionstatechange = () => {
-      console.log("Connection State:", peer.connectionState);
-    };
+  // useEffect(() => {
+  //   peer.onconnectionstatechange = () => {
+  //     console.log("Connection State:", peer.connectionState);
+  //   };
 
-    peer.oniceconnectionstatechange = () => {
-      console.log("ICE State:", peer.iceConnectionState);
-    };
-  }, [peer]);
+  //   peer.oniceconnectionstatechange = () => {
+  //     console.log("ICE State:", peer.iceConnectionState);
+  //   };
+  // }, [peer]);
 
-  useEffect(() => {
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice-candidate", event.candidate);
-      }
-    };
-  }, [peer]);
+  // useEffect(() => {
+  //   peer.onicecandidate = (event) => {
+  //     if (event.candidate) {
+  //       socket.emit("ice-candidate", event.candidate);
+  //     }
+  //   };
+  // }, [peer]);
 
   useEffect(() => {
   socket.on("ice-candidate", async (candidate) => {
@@ -101,7 +129,7 @@ export const PeerProvider = ({ children }) => {
 
   return (
     <PeerContext.Provider
-      value={{ peer, createOffer, createAnswer, sendStream, remoteStream , stream }}
+      value={{ peer, peerRef, createOffer, createAnswer, sendStream, remoteStream , stream }}
     >
       {children}
     </PeerContext.Provider>
