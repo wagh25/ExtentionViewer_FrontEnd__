@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CgProfile } from "react-icons/cg";
 
 import { socket } from "../Services/socket.io";
 
@@ -83,7 +84,8 @@ const Nav = (props) => {
                     : "text-amber-950 hover:text-blue-500 transition-all duration-200"
                 }
               >
-                Home
+                {/* <CgProfile />{user.name} */}
+                👤{user.name}
               </Link>
 
               {admin && (

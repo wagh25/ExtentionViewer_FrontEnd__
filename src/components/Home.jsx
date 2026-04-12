@@ -74,7 +74,8 @@ const Home = () => {
 
 
     const handleIncomingCall = async (data) => {
-      const { offer, callerSocket, message } = data;
+      const { callerSocket,offer, message } = data;
+
 
       if (Notification.permission === "granted") {
         new Notification("Incoming Call 📞", {
@@ -82,7 +83,7 @@ const Home = () => {
         });
       }
 
-      setIncomingCall(offer, callerSocket, message);
+      setIncomingCall({offer, callerSocket, message});
 
 
 
@@ -134,7 +135,7 @@ const Home = () => {
     const { offer, callerSocket, message } = data;
     await sendStream();
     createAnswer(offer).then((answer) => {
-      // console.log("Answer created:", answer);
+      console.log("Answer created:", answer);
       socket.emit("answerCall", {
         answer,
         callerSocket
@@ -155,7 +156,7 @@ const Home = () => {
 
 
     setIncomingCall(null)
-    Navigate("/call");
+    // Navigate("/call");
 
   }
   const handleCall = useCallback(
@@ -375,7 +376,8 @@ const Home = () => {
                         handleCall(user);
                       }}
                     >
-                      <FaPhoneAlt />
+                      {/* <FaPhoneAlt /> */}
+                      📞
                     </button>
                   </div>
                 ) : (
@@ -388,7 +390,8 @@ const Home = () => {
                         handleCall(user);
                       }}
                     >
-                      <FaPhoneAlt />
+                      {/* <FaPhoneAlt /> */}
+                      📞
                     </button>
                   </div>
                 )}
