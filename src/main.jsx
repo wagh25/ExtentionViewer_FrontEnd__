@@ -7,12 +7,15 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import UserProvider from "./Context/UserProvider.jsx";
 import { PeerProvider } from "./Context/PeerContext.jsx";
+import { ChatProvider } from "./Context/ChatContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <PeerProvider>
       <UserProvider>
-        <App />
+        <ChatProvider>
+          <App />
+        </ChatProvider>
       </UserProvider>
     </PeerProvider>
     <ToastContainer />

@@ -1,146 +1,165 @@
 import React, { useState } from "react";
-import Nav from "../nav";
+import Nav from "../Nav";
+import { notifyError, notifySuccess } from "../../utils/tostify";
+import { motion } from "framer-motion";
+import { FaUserPlus, FaUser, FaEnvelope, FaLock, FaPhoneAlt, FaCheckCircle } from "react-icons/fa";
 
 const Forms = (props) => {
-  const [open, setOpen] = useState(false);
-  const [message, setmessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
   const handleSubmit = async (e) => {
-    console.log("clicked");
     e.preventDefault();
+    setLoading(true);
+    setSuccessMsg("");
+
     try {
-      let payload = { 
-        ...(props.Action == "Add" && {
-        name: e.target[0].value,
-        lastName: e.target[1].value,
-        ConfirmPassword: e.target[4].value,
-      }),
-        email: e.target[props.Action == "Add" ? 2 : 0].value,
-        password: e.target[props.Action == "Add" ? 3 : 1].value,
-        ...(props.Action == "Update"
-          ? {
-              oldNumber: e.target[2].value,
-              number: e.target[3].value,
-            }
-          : { number: e.target[props.Action == "Add" ? 5 : 2].value }),
+      const payload = {
+        name: e.target.name.value,
+        lastName: e.target.lastName.value,
+        email: e.target.email.value,
+        password: e.target.password.value,
+        ConfirmPassword: e.target.ConfirmPassword.value,
+        number: e.target.number.value,
       };
 
-      console.log("payload", payload, props.Action);
-      let response = await fetch(
-        `http://localhost:5000/${props.Action.toLowerCase()}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      response = await response.json();
+      let response = await fetch("http://localhost:5000/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
 
-      setOpen(true);
-      setmessage(response.message);
-    } catch (e) {
-      console.error(e)
-      setmessage("Some Error Occured");
-      setOpen(true);
+      if (data.status) {
+        notifySuccess(data.message || "User added successfully");
+        setSuccessMsg(data.message || "User extension added successfully!");
+        e.target.reset();
+      } else {
+        notifyError(data.message || "Failed to add user");
+      }
+    } catch (err) {
+      console.error(err);
+      notifyError("Connection error while adding user");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <Nav active={props.Action} />
-      <div className="relative w-full h-screen flex flex-row items-center justify-center overflow-hidden ">
-        {/* Curtains */}
-        <div
-          className={`absolute top-0 left-0 w-full h-1/2 bg-gray-800 transition-transform duration-700 ease-in-out ${
-            open ? "-translate-y-full" : "translate-y-0"
-          }`}
-        ></div>
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <Nav active="Add" />
 
-        <div
-          className={`absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 transition-transform duration-700 ease-in-out ${
-            open ? "translate-y-full" : "translate-y-0"
-          }`}
-        ></div>
+      <div className="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Background Ambient Glows */}
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
 
-        {open ? (
-          <p>
-            {message}
-            <button
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              ok
-            </button>{" "}
-          </p>
-        ) : (
-          <div className="relative z-10">
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col bg-white p-6 rounded-xl shadow-lg w-[90vw] max-w-md"
-            >
-              {props.Action == "Add" ?<><input
-                name="name"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="Name"
-                type="text"
-              />
-              <input
-                name="lastName"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="Last Name"
-                type="text"
-              /></> : ""}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-md glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl relative z-10"
+        >
+          <div className="text-center mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-2xl mx-auto mb-3">
+              <FaUserPlus />
+            </div>
+            <h2 className="text-2xl font-extrabold text-white tracking-tight">
+              Add New User Extension
+            </h2>
+            <p className="text-slate-400 text-xs mt-1">
+              Create an extension user account with a unique 4-digit number
+            </p>
+          </div>
 
+          {successMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2 font-semibold">
+              <FaCheckCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative">
+                <FaUser className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="First Name"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs"
+                  required
+                />
+              </div>
+              <div className="relative">
+                <FaUser className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
+                <input
+                  name="lastName"
+                  type="text"
+                  placeholder="Last Name"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <FaEnvelope className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
               <input
                 name="email"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="Email"
-                type="text"
+                type="email"
+                placeholder="User Email Address"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs"
+                required
               />
+            </div>
+
+            <div className="relative">
+              <FaPhoneAlt className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
+              <input
+                name="number"
+                type="text"
+                maxLength={4}
+                placeholder="4-Digit Extension Number (e.g. 1001)"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs font-mono"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <FaLock className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
               <input
                 name="password"
-                className="my-2 px-3 py-2 border rounded"
-                placeholder="Password"
                 type="password"
+                placeholder="Account Password"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs"
+                required
               />
-              {props.Action == "Update" ? (
-                <input
-                  name="number"
-                  className="my-2 px-3 py-2 border rounded"
-                  placeholder="Number"
-                  type="Number"
-                />
-              ) : (
-                ""
-              )}
-              {props.Action == "Add" ? (
-                <input
-                  name="ConfirmPassword"
-                  className="my-2 px-3 py-2 border rounded"
-                  placeholder="Confirm Password"
-                  type="password"
-                />
-              ) : (
-                ""
-              )}
-              <input
-                name={props.Action == "Update" ? "newNumber" : "number"}
-                className="my-2 px-3 py-2 border rounded"
-                placeholder={props.Action == "Update" ? "newNumber" : "number"}
-                type="Number"
-              />
+            </div>
 
+            <div className="relative">
+              <FaLock className="absolute left-3.5 top-3.5 text-slate-500 text-xs" />
               <input
-                className="my-2 px-3 py-2 bg-green-600 text-white rounded cursor-pointer hover:bg-green-700 transition-all"
-                type="submit"
-                value={`${props.Action} User`}
+                name="ConfirmPassword"
+                type="password"
+                placeholder="Confirm Password"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-xs"
+                required
               />
-            </form>
-          </div>
-        )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all duration-200 mt-2"
+            >
+              {loading ? "Adding User..." : "Add User Extension"}
+            </button>
+          </form>
+        </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Forms;
+

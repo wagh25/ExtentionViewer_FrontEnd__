@@ -5,18 +5,15 @@ import Forms from "./components/Admin/Forms";
 import Authentication from "./components/Authentication/Authentication";
 import ProtectRoute from "./components/Authentication/ProtectRoute";
 import Call from "./components/Call";
+import Chat from "./components/Chat";
+
 function App() {
   return (
     <>
-      {/* <ProtectRoute/> */}
       <Routes>
         <Route
           path="/"
-          element={
-            <ProtectRoute>
-              <Home />
-            </ProtectRoute>
-          }
+          element={<Home />}
         />
         <Route
           path="/login"
@@ -32,6 +29,14 @@ function App() {
           element={
             <ProtectRoute>
               <Forms Action="Add" />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectRoute>
+              <Chat />
             </ProtectRoute>
           }
         />
